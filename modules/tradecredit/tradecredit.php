@@ -32,7 +32,7 @@ class TradeCredit extends PaymentModule
             [],
             'Modules.Tradecredit.Admin'
         );
-        $this->ps_versions_compliancy = ['min' => '9.0.0', 'max' => _PS_VERSION_];
+        $this->ps_versions_compliancy = ['min' => '9.0.0', 'max' => _PS_VERSION_];;
     }
 
     /**
@@ -51,7 +51,8 @@ class TradeCredit extends PaymentModule
 
         Configuration::updateValue(self::CONFIG_DEFAULT_CREDIT, (string)self::DEFAULT_CREDIT);
 
-        return $this->registerHook('paymentOptions')
+        return $this->registerHook('actionCustomerAccountAdd')
+            && $this->registerHook('paymentOptions')
             && $this->registerHook('paymentReturn')
             && $this->registerHook('actionValidateOrder')
             && $this->registerHook('actionOrderStatusPostUpdate')
@@ -148,6 +149,14 @@ class TradeCredit extends PaymentModule
     // =========================================================================
     // FRONT OFFICE HOOKS
     // =========================================================================
+
+    /**
+     * Hook: ActionCustomerAccountAdd — add credit field to customer created only on frontend
+     */
+    public function hookActionCustomerAccountAdd(array $params): void
+    {
+        $this->saveCustomerCredit($params);
+    }
 
     /**
      * Hook: paymentOptions — display trade credit as payment option on checkout
@@ -301,7 +310,7 @@ class TradeCredit extends PaymentModule
     }
 
     /**
-     * Hook: actionAfterCreateCustomerFormHandler — save credit on customer creation
+     * Hook: actionAfterCreateCustomerFormHandler — save credit on customer creation in backoffice
      */
     public function hookActionAfterCreateCustomerFormHandler(array $params): void
     {
@@ -309,25 +318,27 @@ class TradeCredit extends PaymentModule
     }
 
     /**
-     * Hook: actionAfterUpdateCustomerFormHandler — save credit on customer update
+     * Hook: actionAfterUpdateCustomerFormHandler — save credit on customer update in backoffice
      */
     public function hookActionAfterUpdateCustomerFormHandler(array $params): void
     {
         $this->saveCustomerCredit($params);
     }
 
+
     /**
-     * Save credit amount from customer form
+     * Save credit amount for customer
      */
     private function saveCustomerCredit(array $params): void
     {
-        $customerId = (int)$params['id'];
+        $customerId = (int)($params['id'] ?? $params['newCustomer']->id);
         $formData = $params['form_data'] ?? [];
         $creditAmount = isset($formData['trade_credit_amount'])
             ? (float)$formData['trade_credit_amount']
             : (float)Configuration::get(self::CONFIG_DEFAULT_CREDIT);
 
         $service = $this->getCreditService();
+
         $service->setCredit($customerId, $creditAmount);
     }
 

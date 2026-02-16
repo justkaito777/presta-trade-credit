@@ -15,14 +15,12 @@ class TradeCreditService
      */
     public function getAvailableCredit(int $customerId): float
     {
-        $this->ensureCreditRecord($customerId);
-
         $result = Db::getInstance()->getValue(
             'SELECT `available_credit` FROM `' . _DB_PREFIX_ . 'trade_credit` 
-             WHERE `id_customer` = ' . (int) $customerId
+             WHERE `id_customer` = ' . (int)$customerId
         );
 
-        return $result !== false ? (float) $result : 0.0;
+        return $result !== false ? (float)$result : 0.0;
     }
 
     /**
@@ -35,10 +33,10 @@ class TradeCreditService
         return Db::getInstance()->update(
             'trade_credit',
             [
-                'available_credit' => (float) $amount,
+                'available_credit' => (float)$amount,
                 'date_upd' => date('Y-m-d H:i:s'),
             ],
-            'id_customer = ' . (int) $customerId
+            'id_customer = ' . (int)$customerId
         );
     }
 
@@ -65,14 +63,6 @@ class TradeCreditService
     }
 
     /**
-     * Check if customer has enough credit for given amount.
-     */
-    public function hasEnoughCredit(int $customerId, float $amount): bool
-    {
-        return $this->getAvailableCredit($customerId) >= $amount;
-    }
-
-    /**
      * Ensure a credit record exists for the customer.
      * Creates one with default amount if it doesn't exist.
      */
@@ -80,11 +70,11 @@ class TradeCreditService
     {
         $exists = Db::getInstance()->getValue(
             'SELECT `id_trade_credit` FROM `' . _DB_PREFIX_ . 'trade_credit` 
-             WHERE `id_customer` = ' . (int) $customerId
+             WHERE `id_customer` = ' . (int)$customerId
         );
 
         if (!$exists) {
-            $defaultCredit = (float) Configuration::get('TRADE_CREDIT_DEFAULT_AMOUNT');
+            $defaultCredit = (float)Configuration::get('TRADE_CREDIT_DEFAULT_AMOUNT');
             if ($defaultCredit <= 0) {
                 $defaultCredit = 50000.00;
             }
@@ -92,8 +82,8 @@ class TradeCreditService
             $now = date('Y-m-d H:i:s');
 
             Db::getInstance()->insert('trade_credit', [
-                'id_customer' => (int) $customerId,
-                'available_credit' => (float) $defaultCredit,
+                'id_customer' => (int)$customerId,
+                'available_credit' => (float)$defaultCredit,
                 'date_add' => $now,
                 'date_upd' => $now,
             ]);
