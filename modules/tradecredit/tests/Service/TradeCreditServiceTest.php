@@ -31,6 +31,7 @@ class TradeCreditServiceTest extends TestCase
         $customerId = $this->createTestCustomer();
 
         try {
+            $this->service->setCredit($customerId, (float)\Configuration::get('TRADE_CREDIT_DEFAULT_AMOUNT'));
             $credit = $this->service->getAvailableCredit($customerId);
             $defaultCredit = (float)\Configuration::get('TRADE_CREDIT_DEFAULT_AMOUNT');
 

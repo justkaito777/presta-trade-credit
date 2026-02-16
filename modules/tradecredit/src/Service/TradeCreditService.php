@@ -89,4 +89,12 @@ class TradeCreditService
             ]);
         }
     }
+
+    /**
+     * Check if customer has enough credit for given amount.
+     */
+    public function hasEnoughCredit(int $customerId, float $amount): bool
+    {
+        return $this->getAvailableCredit($customerId) >= $amount;
+    }
 }
